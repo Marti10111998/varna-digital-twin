@@ -224,8 +224,19 @@
       <div class="col-span-2">
         <label class="block text-sm font-medium">Pollutant</label>
         <select id="chartPollutant" class="w-full border rounded px-2 py-1">
-          <option>O3</option><option>NO2</option><option>NO</option><option>CO</option><option>NH3</option><option>Noise</option>
-        </select>
+  <option value="O3">O3</option>
+  <option value="NO2">NO2</option>
+  <option value="NO">NO</option>
+  <option value="CO">CO</option>
+  <option value="NH3">NH3</option>
+  <option value="Noise">Noise</option>
+
+  <option value="PM10">PM10</option>
+  <option value="PM25">PM2.5</option>
+  <option value="SO2">SO2</option>
+  <option value="B">B (benzene)</option>
+</select>
+
       </div>
       <div class="col-span-2">
         <label class="block text-sm font-medium">Granularity</label>
@@ -313,7 +324,7 @@
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjODA1Mzg0My0zMDBjLTQ4MDEtODlmOC01OTc4M2QyODllYWEiLCJpZCI6MzA0ODA3LCJpYXQiOjE3NjA5NTUyMjJ9.G754yiSXNU-RMeD3mwyIH6W6sIU-dEwNrrdqOp8uCXk";
 
     // Optional backend (predict/backfill); app works without it
-    const POLLUTION_API = "https://beliefs-application-eight-weapon.trycloudflare.com/";
+    const POLLUTION_API = "https://seasonal-kinds-technological-state.trycloudflare.com";
 
     // ======== CLOUD SYNC SETTINGS (NEW) ========
     const CLOUD_SYNC_ENABLED = !!POLLUTION_API;
@@ -340,7 +351,8 @@
     let viewer, buildings = [], heatmapEntities = [];
     let trafficLayer = null, trafficTimer = null;
 
-    const histories = { urbanTemp: [], O3: [], NO2: [], NO: [], CO: [], NH3: [], Noise: [] };
+    const histories = {
+  urbanTemp: [], O3: [], NO2: [], NO: [], CO: [], NH3: [], Noise: [], PM10: [], PM25: [], SO2: [], B: [] };
     let lastWeather = { temp: null, wind: 0, clouds: 0, humidity: 0, pressure: 0, rain1h: 0 };
 
     const STEP_MINUTES  = 60;              // hourly steps
@@ -531,14 +543,20 @@
             return series;
           }
           const out = {
-            urbanTemp: hw(ensure(histories.urbanTemp, 28), 0.5,0.3,0.2, 24, horizon),
-            O3:   hw(ensure(histories.O3,   80), 0.5,0.3,0.2, 24, horizon),
-            NO2:  hw(ensure(histories.NO2,  30), 0.5,0.3,0.2, 24, horizon),
-            NO:   hw(ensure(histories.NO,   20), 0.5,0.3,0.2, 24, horizon),
-            CO:   hw(ensure(histories.CO,  1.0), 0.5,0.3,0.2, 24, horizon),
-            NH3:  hw(ensure(histories.NH3, 1.0), 0.5,0.3,0.2, 24, horizon),
-            Noise: hw(ensure(histories.Noise, 60), 0.5,0.3,0.2, 24, horizon)
-          };
+  urbanTemp: hw(ensure(histories.urbanTemp, 28), 0.5,0.3,0.2, 24, horizon),
+  O3:    hw(ensure(histories.O3,   80), 0.5,0.3,0.2, 24, horizon),
+  NO2:   hw(ensure(histories.NO2,  30), 0.5,0.3,0.2, 24, horizon),
+  NO:    hw(ensure(histories.NO,   20), 0.5,0.3,0.2, 24, horizon),
+  CO:    hw(ensure(histories.CO,  1.0), 0.5,0.3,0.2, 24, horizon),
+  NH3:   hw(ensure(histories.NH3, 1.0), 0.5,0.3,0.2, 24, horizon),
+  Noise: hw(ensure(histories.Noise, 60), 0.5,0.3,0.2, 24, horizon),
+
+  PM10:  hw(ensure(histories.PM10, 35), 0.5,0.3,0.2, 24, horizon),
+  PM25:  hw(ensure(histories.PM25, 20), 0.5,0.3,0.2, 24, horizon),
+  SO2:   hw(ensure(histories.SO2, 10), 0.5,0.3,0.2, 24, horizon),
+  B:     hw(ensure(histories.B,    3), 0.5,0.3,0.2, 24, horizon)
+};
+
           postMessage({ kind:"PREDICTIONS", data: out, ts: Date.now() });
         }
       };
@@ -625,10 +643,11 @@
 
         if (typeof nowPoll.Noise !== 'number') nowPoll.Noise = estimateNoiseFromContext(lastWeather);
 
-        for (const k of ["O3","NO2","NO","CO","NH3","Noise"]) {
-          histories[k].push(Number(nowPoll[k]) || 0);
-          if (histories[k].length > 2000) histories[k].shift();
-        }
+        for (const k of KEYS) {
+  histories[k].push(Number(nowPoll[k]) || 0);
+  if (histories[k].length > 2000) histories[k].shift();
+}
+
 
         syncMeasuredSeries(nowPoll);
 
@@ -652,18 +671,26 @@
     }
 
     function simulatePollutionFromWeather(w){
-      const { temp, wind, humidity, clouds } = w;
-      const cap = (x,min,max)=>Math.max(min, Math.min(max, x));
-      const Noise = estimateNoiseFromContext(w);
-      return {
-        O3:  cap(60 + (temp-20)*2 - clouds*0.3 + wind*-2, 20, 140),
-        NO2: cap(20 + clouds*0.2 + (30 - wind*3), 5, 80),
-        NO:  cap(10 + (humidity-50)*0.1 + (30 - wind*4), 2, 70),
-        CO:  cap(0.6 + (30 - wind*5)*0.02, 0.2, 3),
-        NH3: cap(0.8 + (humidity-50)*0.01, 0.3, 4),
-        Noise
-      };
-    }
+  const { temp, wind, humidity, clouds } = w;
+  const cap = (x,min,max)=>Math.max(min, Math.min(max, x));
+  const Noise = estimateNoiseFromContext(w);
+
+  return {
+    O3:   cap(60 + (temp-20)*2 - clouds*0.3 + wind*-2, 20, 140),
+    NO2:  cap(20 + clouds*0.2 + (30 - wind*3), 5, 80),
+    NO:   cap(10 + (humidity-50)*0.1 + (30 - wind*4), 2, 70),
+    CO:   cap(0.6 + (30 - wind*5)*0.02, 0.2, 3),
+    NH3:  cap(0.8 + (humidity-50)*0.01, 0.3, 4),
+
+    PM10: cap(25 + clouds*0.15 + (30 - wind*2),   5, 120),
+    PM25: cap(15 + clouds*0.10 + (30 - wind*2.5), 3,  80),
+    SO2:  cap(8  + (30 - wind*3)*0.2,             2,  40),
+    B:    cap(2  + (humidity-50)*0.02,            0.5,10),
+
+    Noise
+  };
+}
+
 
     function requestForecast(){
       worker.postMessage({
@@ -759,12 +786,17 @@
     // Time-series chart wiring (unchanged)
     // ==========================
     const tsStore = {
-      O3: [], NO2: [], NO: [], CO: [], NH3: [], Noise: [],
-      pred: { O3: [], NO2: [], NO: [], CO: [], NH3: [], Noise: [] }
-    };
+  O3: [], NO2: [], NO: [], CO: [], NH3: [], Noise: [],
+  PM10: [], PM25: [], SO2: [], B: [],
+  pred: {
+    O3: [], NO2: [], NO: [], CO: [], NH3: [], Noise: [],
+    PM10: [], PM25: [], SO2: [], B: []
+  }
+};
+
     const RETENTION_DAYS = 7;
     const STORE_KEY = "pollution_ts_v1";
-    const KEYS = ["O3","NO2","NO","CO","NH3","Noise"];
+    const KEYS = ["O3","NO2","NO","CO","NH3","Noise","PM10","PM25","SO2","B"];
 
     function pruneOldData() {
       const cutoff = Date.now() - RETENTION_DAYS * 24 * 3600 * 1000;
@@ -774,7 +806,18 @@
     function saveTsStore() {
       pruneOldData();
       const cap = (arr, n = 100000) => (arr.length > n ? arr.slice(arr.length - n) : arr);
-      const payload = { O3: cap(tsStore.O3), NO2: cap(tsStore.NO2), NO: cap(tsStore.NO), CO: cap(tsStore.CO), NH3: cap(tsStore.NH3), Noise: cap(tsStore.Noise) };
+      const payload = {
+  O3: cap(tsStore.O3),
+  NO2: cap(tsStore.NO2),
+  NO: cap(tsStore.NO),
+  CO: cap(tsStore.CO),
+  NH3: cap(tsStore.NH3),
+  Noise: cap(tsStore.Noise),
+  PM10: cap(tsStore.PM10),
+  PM25: cap(tsStore.PM25),
+  SO2: cap(tsStore.SO2),
+  B: cap(tsStore.B)
+};
       try { localStorage.setItem(STORE_KEY, JSON.stringify(payload)); } catch {}
       syncToCloud();
     }
@@ -821,8 +864,24 @@
       return points.filter(p=>p.ts >= cutoff);
     }
 
-    const UNITS = { O3:"µg/m³", NO2:"µg/m³", NO:"µg/m³", CO:"ppm", NH3:"µg/m³", Noise:"dB(A)" };
-    const THRESHOLDS = { O3:100, NO2:40, NO:50, CO:10, NH3:2, Noise:65 };
+    const UNITS = { O3:"µg/m³", NO2:"µg/m³", NO:"µg/m³", CO:"ppm", NH3:"µg/m³", Noise:"dB(A)", PM10:"µg/m³", PM25:"µg/m³", SO2:"µg/m³", B:"µg/m³"};
+    const THRESHOLDS = {
+  O3:100,
+  NO2:40,
+  NO:50,
+  CO:10,
+  NH3:2,
+  Noise:65,
+  PM10:40,   // µg/m³
+  PM25:25,   // µg/m³
+  SO2:20,    // µg/m³
+  B:5        // µg/m³ (benzene)
+};
+
+const LABELS = {
+  PM25: "PM2.5",
+  B: "B (benzene)"
+};
 
     const thresholdPlugin = {
       id: 'thresholdLine',
@@ -962,6 +1021,7 @@
       const chart = ensureChart();
       const pollutant = document.getElementById("chartPollutant").value;
       const gran = document.getElementById("chartGranularity").value;
+      const name = LABELS[pollutant] || pollutant;
       const daysBack = parseInt(document.getElementById("chartDaysBack").value, 10);
       const showPred = document.getElementById("chartShowPred").checked;
       const horizonHrs = parseInt(document.getElementById("chartHorizon").value, 10);
@@ -987,7 +1047,7 @@
       const unit  = UNITS[pollutant] || '';
 
       const dsMeasured = {
-        label: `${pollutant} (measured)`,
+        label: `${name} (measured)`,
         data: measuredAgg,
         borderWidth: 3,
         borderColor: CH_BLUE_MEASURED,
@@ -1008,11 +1068,11 @@
           metaPollutant: pollutant, order: 5
         };
         const dsPredUpper = {
-          label: `${pollutant} (forecast — uncertainty)`,
+          label: `${name} (forecast — uncertainty)`,
           data: band.upper,
           borderWidth: 0, pointRadius: 0, fill: { target: "-1" },
           backgroundColor: CH_BLUE_BAND,
-          metaPollutant: pollutant, order: 6
+          metaPollutant: name, order: 6
         };
         const dsPred = {
           label: `${pollutant} (forecast)`,
@@ -1026,7 +1086,7 @@
       if (peaks.length){
         datasets.push({
           type: 'scatter',
-          label: `${pollutant} — peaks`,
+          label: `${name} — peaks`,
           data: peaks,
           pointRadius: 4, pointHoverRadius: 6,
           pointBackgroundColor: 'rgba(220, 38, 38, 0.9)',
@@ -1035,11 +1095,11 @@
       }
 
       chart.data.datasets = datasets;
-      chart.options.scales.y.title.text = `${pollutant} (${unit})`;
+      chart.options.scales.y.title.text = `${name} (${unit})`;
       chart.options.plugins.thresholdLine.value = thr;
 
       document.getElementById("pollutionChartStatus").textContent =
-        `${pollutant} • granularity: ${gran} • past: ${daysBack}d • future: ${horizonHrs}h • pts: ${measuredAgg.length}`;
+        `${name} • granularity: ${gran} • past: ${daysBack}d • future: ${horizonHrs}h • pts: ${measuredAgg.length}`;
 
       chart.update();
 
@@ -1061,11 +1121,12 @@
     }
 
     function syncMeasuredSeries(nowPoll){
-      const ts = Date.now();
-      for (const k of KEYS) pushMeasured(k, ts, Number(nowPoll[k]) || 0);
-      saveTsStore();
-      renderPollutionChart();
-    }
+  const ts = Date.now();
+  for (const k of KEYS) pushMeasured(k, ts, Number(nowPoll[k]) || 0);
+  saveTsStore();
+  renderPollutionChart();
+}
+
     function syncPredictionSeries(){
       const baseTs = Date.now();
       setPredictedHorizon(latestPredictions, baseTs);
@@ -1092,19 +1153,33 @@
     // Pollution tiles panel
     // ==========================
     function paintPollutionPanelNow(){
-      const out = latestPredictions
-        ? { O3: latestPredictions.O3[0], NO2: latestPredictions.NO2[0], NO: latestPredictions.NO[0], CO: latestPredictions.CO[0], NH3: latestPredictions.NH3[0], Noise: latestPredictions.Noise[0] }
-        : histories;
+  const PANEL_KEYS = ["PM10","PM25","O3","NO2","NO","SO2","B","CO","NH3","Noise"];
+
+  let out = {};
+  if (latestPredictions) {
+    for (const k of PANEL_KEYS) {
+      if (Array.isArray(latestPredictions[k]) && latestPredictions[k].length) {
+        out[k] = latestPredictions[k][0];
+      }
+    }
+  } else {
+    out = histories;
+  }
 
       const level = (p, v)=> v < THRESHOLDS[p]*0.6 ? "bg-green-100 text-green-800"
                              : v < THRESHOLDS[p]     ? "bg-yellow-100 text-yellow-800"
                                                      : "bg-red-100 text-red-800";
-      const entries = ["O3","NO2","NO","CO","NH3","Noise"].map(k=>{
-        const v = (out && typeof out[k]==="number") ? out[k] : (out?.[k]?.slice?.(-1)[0] ?? 0);
-        return `<div class="p-2 rounded-lg ${level(k, v)} flex justify-between items-center">
-                  <span class="font-medium">${k}</span><span class="font-semibold">${(v||0).toFixed(2)}</span>
-                </div>`;
-      }).join("");
+        const entries = PANEL_KEYS.map(k=>{
+    const v = (out && typeof out[k]==="number")
+      ? out[k]
+      : (out?.[k]?.slice?.(-1)[0] ?? 0);
+    const label = LABELS[k] || k;
+    return `<div class="p-2 rounded-lg ${level(k, v)} flex justify-between items-center">
+              <span class="font-medium">${label}</span>
+              <span class="font-semibold">${(v||0).toFixed(2)}</span>
+            </div>`;
+  }).join("");
+
       document.getElementById("pollutionOutput").innerHTML = `<div class="space-y-2">${entries}</div>`;
       document.getElementById("pollutionStamp").textContent = "Updated: " + new Date().toLocaleTimeString();
     }
