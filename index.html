@@ -1466,7 +1466,7 @@ const RURAL_LAT = 43.2400;
 const RURAL_LON = 27.7600;
 
 // Optional backend (predict/backfill); app works without it
-const POLLUTION_API = "https://model-dans-fairfield-effectively.trycloudflare.com";
+const POLLUTION_API = "https://uneducative-eximiously-zada.ngrok-free.dev";
 
 function apiUrl(path = "") {
   const base = (POLLUTION_API || "").replace(/\/+$/, "");
@@ -2255,6 +2255,11 @@ const THRESHOLDS = {
   PM25:25,
   SO2:20,
   B:5
+};
+
+const LABELS = {
+  PM25: "PM2.5",
+  B: "B (benzene)"
 };
 
     // Threshold line plugin
