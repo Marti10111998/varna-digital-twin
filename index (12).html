@@ -1,7 +1,7 @@
 <!--
-  Codogno Digital Twin
+  Varna Digital Twin
   Copyright (c) 2025 Your Full Name. All rights reserved.
-  Licensed under the "Codogno Digital Twin Non-Commercial, No-Project License v1.0".
+  Licensed under the "Varna Digital Twin Non-Commercial, No-Project License v1.0".
   See the LICENSE file for details.
 -->
 
@@ -11,7 +11,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Codogno Digital Twin — Spectral UHI (Legend Top-Right)</title>
+  <title>Varna Digital Twin — Spectral UHI (Legend Top-Right)</title>
 
   <!-- UI / 3D -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1045,7 +1045,7 @@ footer{
   <!-- Header (also the drag handle) -->
   <div class="drag-handle ui-header">
     <div style="min-width:0;">
-      <div class="ui-title">Codogno Digital Twin</div>
+      <div class="ui-title">Varna Digital Twin</div>
       <div class="ui-subtitle">Visualization controls</div>
     </div>    
   </div>
@@ -1303,7 +1303,7 @@ footer{
     <div class="drag-handle ui-header">
       <div style="min-width:0;">
         <div class="ui-title">Weather</div>
-        <div class="ui-subtitle">Forecast • Europe/Rome</div>
+        <div class="ui-subtitle">Forecast • Europe/Sofia</div>
       </div>
     </div>
 
@@ -1342,7 +1342,7 @@ footer{
       </div>
 
       <div class="mt-2 text-[12px] text-gray-600">
-        Next 48h temperature trend • 7-day outlook • Uses timezone Europe/Rome
+        Next 48h temperature trend • 7-day outlook • Uses timezone Europe/Sofia
       </div>
     </div>
   </div>
@@ -1448,6 +1448,18 @@ footer{
     const weatherApiKey = "2d6c23f739fdc7ba90b8754fd02dae9c";
     const tomtomKey     = "j1Z1JoCDAq3ia7s4XaLTTd8Ip6G3nzZ5";
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjODA1Mzg0My0zMDBjLTQ4MDEtODlmOC01OTc4M2QyODllYWEiLCJpZCI6MzA0ODA3LCJpYXQiOjE3NjA5NTUyMjJ9.G754yiSXNU-RMeD3mwyIH6W6sIU-dEwNrrdqOp8uCXk";
+
+// ===== STEP 4: VARNA CONFIG =====
+const CITY_NAME = "Varna";
+const CITY_TZ = "Europe/Sofia";
+
+// Urban (city center)
+const URBAN_LAT = 43.2141;
+const URBAN_LON = 27.9147;
+
+// Rural (inland reference, NOT sea)
+const RURAL_LAT = 43.2400;
+const RURAL_LON = 27.7600;
 
 // Optional backend (predict/backfill); app works without it
 const POLLUTION_API = "https://uneducative-eximiously-zada.ngrok-free.dev";
@@ -1802,8 +1814,8 @@ const DEVICE_KEY = "device_id_v1";
     // Weather + UHI (realtime)
     // ==========================
     async function fetchUHIAndUpdate(){
-      const urbanURL = `https://api.openweathermap.org/data/2.5/weather?lat=45.165&lon=9.703&units=metric&appid=${weatherApiKey}`;
-      const ruralURL = `https://api.openweathermap.org/data/2.5/weather?lat=45.165&lon=9.603&units=metric&appid=${weatherApiKey}`;
+      const urbanURL = `https://api.openweathermap.org/data/2.5/weather?lat=${URBAN_LAT}&lon=${URBAN_LON}&units=metric&appid=${weatherApiKey}`;
+      const ruralURL = `https://api.openweathermap.org/data/2.5/weather?lat=${RURAL_LAT}&lon=${RURAL_LON}&units=metric&appid=${weatherApiKey}`;
 
       try {
         const [uRes, rRes] = await Promise.all([resilientFetch(urbanURL), resilientFetch(ruralURL)]);
@@ -1921,7 +1933,7 @@ function ensureUhiHalo(){
 
   uhiHaloEntity = viewer.entities.add({
     id: "uhi_halo",
-    position: Cesium.Cartesian3.fromDegrees(9.703, 45.165, 0), // center of Codogno (same as your weather point)
+    position: Cesium.Cartesian3.fromDegrees(27.9147, 43.2141, 4000), // center of Varna (same as your weather point)
     ellipse: {
       semiMajorAxis: 2200.0,
       semiMinorAxis: 2200.0,
@@ -2082,7 +2094,7 @@ async function checkSystemHealth(){
   // -----------------------
   try{
 
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=45.165&lon=9.703&appid=${weatherApiKey}`;
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${URBAN_LAT}&lon=${URBAN_LON}&appid=${weatherApiKey}`;
 
     const res = await fetch(url);
 
@@ -2095,7 +2107,7 @@ async function checkSystemHealth(){
   // -----------------------
   try{
 
-    const url = `https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?point=45.165,9.703&key=${tomtomKey}`;
+    const url = `https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?point=${URBAN_LAT},${URBAN_LON}&key=${tomtomKey}`;
 
     const res = await fetch(url);
 
@@ -2836,7 +2848,7 @@ applyShadowAndSun();
 
       // Load buildings
       const buildingSelector = document.getElementById("buildingSelector");
-      const dataSource = await Cesium.GeoJsonDataSource.load("codogno_buildings_with_heights.geojson", { clampToGround:false });
+      const dataSource = await Cesium.GeoJsonDataSource.load("varna_buildings_with_heights.geojson", { clampToGround:false });
       viewer.dataSources.add(dataSource);
       // Frame all buildings in a gentle bird’s-eye
 await viewer.zoomTo(
@@ -2851,7 +2863,7 @@ await viewer.zoomTo(
       buildings = dataSource.entities.values;
 
       buildings.forEach((building, i) => {
-        const stableId = building.properties?.id?.getValue?.() ?? `codogno-building-${i+1}`;
+        const stableId = building.properties?.id?.getValue?.() ?? `varna-building-${i+1}`;
 building.name = stableId;
 building.properties.addProperty("stable_id");
 building.properties.stable_id = stableId;
