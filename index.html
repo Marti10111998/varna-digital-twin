@@ -992,8 +992,11 @@ footer{
 
 /* Force API pill above Cesium UI */
 #ictPill{
-  position: fixed;
-  z-index: 999999;
+  position: fixed !important;
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+  max-width: calc(100vw - 32px);
+  transform: none !important;
   cursor: grab;
 }
 
@@ -2798,64 +2801,7 @@ function paintPollutionPanelNow(){
   }
 }
 
-function makeElementDraggable(el){
-  if (!el) return;
 
-  let isDragging = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  // --- MOUSE ---
-  el.addEventListener("mousedown", (e) => {
-    isDragging = true;
-
-    const rect = el.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-
-    document.body.style.userSelect = "none";
-  });
-
-  window.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-
-    el.style.left = (e.clientX - offsetX) + "px";
-    el.style.top = (e.clientY - offsetY) + "px";
-    el.style.right = "auto";
-    el.style.bottom = "auto";
-  });
-
-  window.addEventListener("mouseup", () => {
-    isDragging = false;
-    document.body.style.userSelect = "";
-  });
-
-  // --- TOUCH (mobile / trackpad gestures) ---
-  el.addEventListener("touchstart", (e) => {
-    isDragging = true;
-
-    const rect = el.getBoundingClientRect();
-    const touch = e.touches[0];
-
-    offsetX = touch.clientX - rect.left;
-    offsetY = touch.clientY - rect.top;
-  }, { passive: true });
-
-  window.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
-
-    const touch = e.touches[0];
-
-    el.style.left = (touch.clientX - offsetX) + "px";
-    el.style.top = (touch.clientY - offsetY) + "px";
-    el.style.right = "auto";
-    el.style.bottom = "auto";
-  }, { passive: true });
-
-  window.addEventListener("touchend", () => {
-    isDragging = false;
-  });
-}
 
     // ==========================
     // Cesium App
@@ -2882,7 +2828,6 @@ Cesium.Camera.DEFAULT_VIEW_FACTOR = 0.5;
 
 viewer = new Cesium.Viewer("cesiumContainer", viewerOpts);
 
-makeElementDraggable(document.getElementById("ictPill"));
 
 // ==========================
 // Basemap toggle
