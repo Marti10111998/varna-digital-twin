@@ -2283,6 +2283,19 @@ const THRESHOLDS = {
   B:5
 };
 
+const LABELS = {
+  O3: "O3",
+  NO2: "NO2",
+  NO: "NO",
+  CO: "CO",
+  NH3: "NH3",
+  Noise: "Noise",
+  PM10: "PM10",
+  PM25: "PM2.5",
+  SO2: "SO2",
+  B: "B (benzene)"
+};
+
     // Threshold line plugin
     const thresholdPlugin = {
       id: 'thresholdLine',
@@ -2776,6 +2789,21 @@ function paintPollutionPanelNow(){
       }, 800);
     }
 
+    function setTrafficStatus(msg){
+  const el = document.getElementById("pollutionChartStatus");
+  if (!el) return;
+
+  const current = el.textContent || "—";
+
+  if (current.includes("• Traffic:")) {
+    el.textContent = current.replace(/• Traffic:.*$/, `• Traffic: ${msg}`);
+  } else if (current === "—") {
+    el.textContent = `Traffic: ${msg}`;
+  } else {
+    el.textContent = `${current} • Traffic: ${msg}`;
+  }
+}
+
     // ==========================
     // Cesium App
     // ==========================
@@ -2792,7 +2820,7 @@ requestForecast();
   shadows: true
 };
 
-// Show Codogno from above as the default overview (Home button too)
+// Show Varna from above as the default overview (Home button too)
 Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(
   9.65, 45.13,
   9.76, 45.20
@@ -3491,21 +3519,23 @@ try {
 
 // Weather Forecast (Open-Meteo) (NEW)
 // ==========================
-const CODOGNO = { lat: 45.165, lon: 9.703 }; // your town center
-let latestWeatherForecast = null; // keep forecast in memory for halo updates
+// ==========================
 
+const WEATHER_CENTER = { lat: URBAN_LAT, lon: URBAN_LON };
+let latestWeatherForecast = null;
 
 async function fetchOpenMeteoForecast(){
-const url =
+  const url =
     `https://api.open-meteo.com/v1/forecast` +
-    `?latitude=${CODOGNO.lat}&longitude=${CODOGNO.lon}` +
+    `?latitude=${WEATHER_CENTER.lat}` +
+    `&longitude=${WEATHER_CENTER.lon}` +
     `&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m` +
     `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code` +
     `&wind_speed_unit=kmh` +
-    `&timezone=Europe%2FRome`;
+    `&timezone=${encodeURIComponent(CITY_TZ)}`;
 
   const r = await fetch(url, { cache: "no-store" });
-  if (!r.ok) throw new Error("Open-Meteo fetch failed");
+  if (!r.ok) throw new Error(`Open-Meteo fetch failed: ${r.status}`);
   const j = await r.json();
   latestWeatherForecast = j;
   return j;
