@@ -1466,11 +1466,7 @@ const RURAL_LAT = 43.2400;
 const RURAL_LON = 27.7600;
 
 // Optional backend (predict/backfill); app works without it
-<<<<<<< HEAD
 const POLLUTION_API = "https://wheel-limiting-pit-cyber.trycloudflare.com/";
-=======
-const POLLUTION_API = "https://model-dans-fairfield-effectively.trycloudflare.com";
->>>>>>> 0dc9782d72894be4d632cf25bd38b81a7a643829
 
 function apiUrl(path = "") {
   const base = (POLLUTION_API || "").replace(/\/+$/, "");
@@ -1881,27 +1877,19 @@ const DEVICE_KEY = "device_id_v1";
       return urbanTemp + 0.03*height - 0.2*wind - 0.02*clouds;
     }
 
-function simulatePollutionFromWeather(w){
-  const { temp, wind, humidity, clouds, rain1h = 0 } = w;
-  const cap = (x,min,max)=>Math.max(min, Math.min(max, x));
-  const Noise = estimateNoiseFromContext(w);
-
-  return {
-    O3:   cap(60 + (temp - 20) * 2.0 - clouds * 0.3 - wind * 2.0, 20, 140),
-    NO2:  cap(20 + clouds * 0.2 + (30 - wind * 3.0), 5, 80),
-    NO:   cap(10 + (humidity - 50) * 0.1 + (30 - wind * 4.0), 2, 70),
-    CO:   cap(0.6 + (30 - wind * 5.0) * 0.02, 0.2, 3.0),
-    NH3:  cap(0.8 + (humidity - 50) * 0.01, 0.3, 4.0),
-
-    // Added missing pollutants
-    PM10: cap(22 + (30 - wind * 2.5) + (humidity < 45 ? 8 : 0) - rain1h * 6, 5, 180),
-    PM25: cap(14 + (25 - wind * 2.0) + (humidity < 45 ? 5 : 0) - rain1h * 4, 3, 120),
-    SO2:  cap(6 + clouds * 0.04 + (20 - wind * 1.5), 1, 40),
-    B:    cap(1.2 + (22 - wind * 1.2) * 0.08, 0.1, 8),
-
-    Noise
-  };
-}
+    function simulatePollutionFromWeather(w){
+      const { temp, wind, humidity, clouds } = w;
+      const cap = (x,min,max)=>Math.max(min, Math.min(max, x));
+      const Noise = estimateNoiseFromContext(w);
+      return {
+        O3:  cap(60 + (temp-20)*2 - clouds*0.3 + wind*-2, 20, 140),
+        NO2: cap(20 + clouds*0.2 + (30 - wind*3), 5, 80),
+        NO:  cap(10 + (humidity-50)*0.1 + (30 - wind*4), 2, 70),
+        CO:  cap(0.6 + (30 - wind*5)*0.02, 0.2, 3),
+        NH3: cap(0.8 + (humidity-50)*0.01, 0.3, 4),
+        Noise
+      };
+    }
 
     function requestForecast(){
       worker.postMessage({
