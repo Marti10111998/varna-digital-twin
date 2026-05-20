@@ -2245,9 +2245,33 @@ for (const k of ["O3","NO2","NO","CO","NH3","Noise","PM10","PM25","SO2","B"]) {
 
     }
 
-    function computeUHI(urbanTemp, height, wind, clouds){
-      return urbanTemp + 0.03*height - 0.2*wind - 0.02*clouds;
-    }
+    function computeScenarioUHI({
+  urbanTemp,
+  height,
+  wind,
+  clouds,
+  greenPct = 0,
+  coolRoofPct = 0,
+  trafficPct = 100,
+  nearbyTreeCooling = 0
+}) {
+  const heightEffect = 0.03 * height;
+  const windCooling = 0.20 * wind;
+  const cloudCooling = 0.02 * clouds;
+
+  const greeningCooling = 0.018 * greenPct;      // 100% green ≈ -1.8 °C
+  const roofCooling = 0.012 * coolRoofPct;       // 100% cool roofs ≈ -1.2 °C
+  const trafficHeating = 0.006 * (trafficPct - 100); // 150% traffic ≈ +0.3 °C
+
+  return urbanTemp
+    + heightEffect
+    + trafficHeating
+    - windCooling
+    - cloudCooling
+    - greeningCooling
+    - roofCooling
+    - nearbyTreeCooling;
+}
 
     function simulatePollutionFromWeather(w){
   const { temp, wind, humidity, clouds, rain1h = 0 } = w;
@@ -2442,6 +2466,63 @@ function updateUhiHalo(){
 
       viewer.scene.requestRender();
     }
+
+    function addProceduralTree(lon, lat, height = 9, crownRadius = 4) {
+  const trunkHeight = height * 0.35;
+  const crownHeight = height * 0.65;
+
+  const trunk = viewer.entities.add({
+    position: Cesium.Cartesian3.fromDegrees(lon, lat, trunkHeight / 2),
+    cylinder: {
+      length: trunkHeight,
+      topRadius: 0.25,
+      bottomRadius: 0.35,
+      material: Cesium.Color.fromCssColorString("#7a4a24"),
+      outline: false
+    }
+  });
+
+  const crown = viewer.entities.add({
+    position: Cesium.Cartesian3.fromDegrees(lon, lat, trunkHeight + crownHeight / 2),
+    ellipsoid: {
+      radii: new Cesium.Cartesian3(crownRadius, crownRadius, crownHeight / 2),
+      material: Cesium.Color.fromCssColorString("#2f7d32").withAlpha(0.92),
+      outline: false
+    }
+  });
+
+  treeEntities.push(trunk, crown);
+}
+
+function plantTreesNearBuildings(percent = 30) {
+  clearTrees();
+
+  const count = Math.round((percent / 100) * Math.min(buildingCentroids.length, MAX_TREES));
+
+  for (let i = 0; i < count; i++) {
+    const c = buildingCentroids[i % buildingCentroids.length];
+    if (!c) continue;
+
+    const offsetLon = (Math.random() - 0.5) * 0.00012;
+    const offsetLat = (Math.random() - 0.5) * 0.00012;
+
+    addProceduralTree(
+      c.lon + offsetLon,
+      c.lat + offsetLat,
+      7 + Math.random() * 6,
+      2.5 + Math.random() * 2
+    );
+  }
+
+  viewer.scene.requestRender();
+}
+
+function clearTrees() {
+  for (const e of treeEntities) {
+    viewer.entities.remove(e);
+  }
+  treeEntities = [];
+}
 
 
 // ==========================
