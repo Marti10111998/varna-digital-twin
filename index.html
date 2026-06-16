@@ -1299,6 +1299,14 @@ footer{
   border-color: rgba(239,68,68,.45) !important;
   box-shadow: var(--panel-shadow), 0 0 0 2px rgba(239,68,68,.20) !important;
 }
+/* ====== Collapsible section accordions (dropdown menus) ====== */
+.ui-section-title{ cursor:pointer; display:flex; align-items:center; justify-content:space-between; user-select:none; }
+.ui-section-title::after{ content:''; width:7px; height:7px; margin-left:8px; border-right:2px solid currentColor; border-bottom:2px solid currentColor; transform:rotate(45deg); transition:transform .18s ease; opacity:.7; flex:0 0 auto; }
+.ui-section.collapsed .ui-section-title::after{ transform:rotate(-45deg); }
+.ui-section > :not(.ui-section-title){ transition:opacity .15s ease; }
+.ui-section.collapsed > :not(.ui-section-title){ display:none !important; }
+.ui-section.collapsed{ padding-bottom:2px; }
+.ui-section-title:hover{ opacity:.85; }
 
   </style>
 </head>
@@ -4791,8 +4799,8 @@ function toggleSatelliteBasemap(){
 mapBtn?.addEventListener("click", toggleMapBasemap);
 satelliteBtn?.addEventListener("click", toggleSatelliteBasemap);
 
-// start with both OFF
-hideAllBasemaps();
+// default basemap state
+toggleSatelliteBasemap(); // default basemap: Satellite ON
 
 // default state
 viewer.scene.requestRenderMode = true;
@@ -10681,7 +10689,8 @@ grip.addEventListener('touchstart', onDown, { passive:false });
       console.log("[RCS] Try: RCS.simulate({scenario:{type:'area_closure',center:[27.9147,43.2076],radius_m:250}})");
     }
   })();
-
+  /* ====== Collapsible section accordions (dropdown menus) ====== */
+  (function(){ function init(){ document.addEventListener('click', function(ev){ var t = ev.target.closest && ev.target.closest('.ui-section-title'); if(!t) return; var s = t.closest('.ui-section'); if(!s) return; s.classList.toggle('collapsed'); t.setAttribute('aria-expanded', s.classList.contains('collapsed') ? 'false' : 'true'); }, true); function decorate(){ document.querySelectorAll('.ui-section-title').forEach(function(t){ if(t.dataset.accInit) return; t.dataset.accInit='1'; t.setAttribute('role','button'); t.setAttribute('tabindex','0'); var s=t.closest('.ui-section'); t.setAttribute('aria-expanded', s && s.classList.contains('collapsed') ? 'false':'true'); t.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t.click(); } }); }); } decorate(); new MutationObserver(decorate).observe(document.body,{childList:true,subtree:true}); } if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init(); })();
 
   </script>
 
