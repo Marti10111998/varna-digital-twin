@@ -1307,6 +1307,29 @@ footer{
 .ui-section.collapsed > :not(.ui-section-title){ display:none !important; }
 .ui-section.collapsed{ padding-bottom:2px; }
 .ui-section-title:hover{ opacity:.85; }
+/* ================= ORGANIZED DASHBOARD SHELL ================= */
+#dashboard{ position:fixed; top:0; left:0; height:100vh; width:380px; z-index:11000; display:flex; font-family:system-ui,-apple-system,'Segoe UI',sans-serif; box-shadow:0 8px 30px rgba(0,0,0,.25); background:rgba(255,255,255,.97); backdrop-filter:blur(6px); border-right:1px solid rgba(0,0,0,.08); transition:transform .25s ease; }
+#dashboard.dash-collapsed{ transform:translateX(-336px); }
+#dashNav{ width:64px; flex:0 0 64px; background:#0f172a; display:flex; flex-direction:column; align-items:stretch; padding-top:8px; }
+#dashBrand{ color:#fff; text-align:center; font-size:9px; font-weight:700; letter-spacing:.04em; padding:8px 4px 12px; line-height:1.2; border-bottom:1px solid rgba(255,255,255,.1); margin-bottom:6px; }
+.dash-nav-btn{ background:transparent; border:0; color:#94a3b8; padding:12px 4px; font-size:10px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; border-left:3px solid transparent; transition:all .15s ease; }
+.dash-nav-btn .dash-ico{ font-size:18px; line-height:1; }
+.dash-nav-btn:hover{ color:#e2e8f0; background:rgba(255,255,255,.05); }
+.dash-nav-btn.active{ color:#fff; background:rgba(56,189,248,.15); border-left-color:#38bdf8; }
+#dashMain{ flex:1; display:flex; flex-direction:column; min-width:0; }
+#dashHeader{ flex:0 0 auto; padding:14px 16px 10px; border-bottom:1px solid rgba(0,0,0,.07); display:flex; align-items:center; justify-content:space-between; }
+#dashTitle{ font-size:15px; font-weight:800; color:#0f172a; }
+#dashSubtitle{ font-size:11px; color:#64748b; margin-top:2px; }
+#dashToggle{ position:fixed; top:12px; left:392px; z-index:11001; width:34px; height:34px; border-radius:8px; border:1px solid rgba(0,0,0,.1); background:#fff; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.15); font-size:16px; transition:left .25s ease; }
+body.dash-min #dashToggle{ left:12px; }
+#dashContent{ flex:1; overflow-y:auto; overflow-x:hidden; padding:14px; }
+.dash-view{ display:none; }
+.dash-view.active{ display:block; }
+/* Normalize relocated panels so they sit flat as dashboard cards */
+#dashContent #controlPanel,#dashContent #envPanel,#dashContent #weatherPanel,#dashContent #scenarioPanel{ position:static !important; inset:auto !important; top:auto !important; left:auto !important; right:auto !important; bottom:auto !important; transform:none !important; width:100% !important; max-width:100% !important; max-height:none !important; height:auto !important; box-shadow:none !important; border:0 !important; background:transparent !important; backdrop-filter:none !important; margin:0 !important; z-index:auto !important; cursor:default !important; }
+#dashContent .drag-handle,#dashContent .ui-header{ cursor:default !important; }
+#dashContent .ui-section{ background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:10px; padding:10px 12px !important; margin:0 0 10px !important; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+@media (max-width:560px){ #dashboard{ width:88vw; } }
 
   </style>
 </head>
@@ -1315,7 +1338,27 @@ footer{
 
 <body>
   <div id="cesiumContainer"></div>
-
+  <!-- ================= ORGANIZED DASHBOARD ================= -->
+    <button id="dashToggle" title="Toggle dashboard" aria-label="Toggle dashboard">☰</button>
+      <aside id="dashboard">
+          <nav id="dashNav">
+                <div id="dashBrand">VARNA<br>TWIN</div>
+                      <button class="dash-nav-btn active" data-view="view-viz" data-title="Visualization" data-sub="Buildings, color, lighting, traffic & forecast"><span class="dash-ico">🗺️</span>Viz</button>
+                            <button class="dash-nav-btn" data-view="view-env" data-title="Environment" data-sub="Air quality & pollution"><span class="dash-ico">🌫️</span>Env</button>
+                                  <button class="dash-nav-btn" data-view="view-weather" data-title="Weather" data-sub="Forecast • Europe/Sofia"><span class="dash-ico">⛅</span>Wx</button>
+                                        <button class="dash-nav-btn" data-view="view-scn" data-title="What-if Scenarios" data-sub="Climate, greening, traffic & policy"><span class="dash-ico">🧪</span>Scn</button>
+                                            </nav>
+                                                <div id="dashMain">
+                                                      <div id="dashHeader"><div><div id="dashTitle">Visualization</div><div id="dashSubtitle">Buildings, color, lighting, traffic & forecast</div></div></div>
+                                                            <div id="dashContent">
+                                                                    <section class="dash-view active" id="view-viz"></section>
+                                                                            <section class="dash-view" id="view-env"></section>
+                                                                                    <section class="dash-view" id="view-weather"></section>
+                                                                                            <section class="dash-view" id="view-scn"></section>
+                                                                                                  </div>
+                                                                                                      </div>
+                                                                                                        </aside>
+                                                                                                        -->
   <!-- Control Panel -->
 <div id="controlPanel" class="absolute top-4 left-4 w-[320px] z-10 font-sans rounded-xl">
   <!-- Header (also the drag handle) -->
@@ -10691,7 +10734,8 @@ grip.addEventListener('touchstart', onDown, { passive:false });
   })();
   /* ====== Collapsible section accordions (dropdown menus) ====== */
   (function(){ function init(){ document.addEventListener('click', function(ev){ var t = ev.target.closest && ev.target.closest('.ui-section-title'); if(!t) return; var s = t.closest('.ui-section'); if(!s) return; s.classList.toggle('collapsed'); t.setAttribute('aria-expanded', s.classList.contains('collapsed') ? 'false' : 'true'); }, true); function decorate(){ document.querySelectorAll('.ui-section-title').forEach(function(t){ if(t.dataset.accInit) return; t.dataset.accInit='1'; t.setAttribute('role','button'); t.setAttribute('tabindex','0'); var s=t.closest('.ui-section'); t.setAttribute('aria-expanded', s && s.classList.contains('collapsed') ? 'false':'true'); t.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t.click(); } }); }); } decorate(); new MutationObserver(decorate).observe(document.body,{childList:true,subtree:true}); } if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init(); })();
-
+  /* ================= ORGANIZED DASHBOARD WIRING ================= */
+  (function(){ var MAP={'view-viz':'controlPanel','view-env':'envPanel','view-weather':'weatherPanel','view-scn':'scenarioPanel'}; function place(){ var any=true; for(var v in MAP){ var host=document.getElementById(v), panel=document.getElementById(MAP[v]); if(host && panel){ if(panel.parentElement!==host){ host.appendChild(panel); panel.style.display=''; } } else { any=false; } } return any; } function show(view,title,sub){ document.querySelectorAll('.dash-view').forEach(function(s){ s.classList.toggle('active', s.id===view); }); document.querySelectorAll('.dash-nav-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.view===view); }); if(title) document.getElementById('dashTitle').textContent=title; var sb=document.getElementById('dashSubtitle'); if(sb) sb.textContent=sub||''; var c=document.getElementById('dashContent'); if(c) c.scrollTop=0; } function init(){ place(); var tries=0, iv=setInterval(function(){ tries++; if(place() || tries>30) clearInterval(iv); }, 200); document.querySelectorAll('.dash-nav-btn').forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.view, b.dataset.title, b.dataset.sub); }); }); var t=document.getElementById('dashToggle'); if(t) t.addEventListener('click', function(){ document.getElementById('dashboard').classList.toggle('dash-collapsed'); document.body.classList.toggle('dash-min'); }); } if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(init,400); }); else setTimeout(init,400); })();
   </script>
 
 
