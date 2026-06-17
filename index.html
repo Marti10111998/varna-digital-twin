@@ -10760,137 +10760,192 @@ grip.addEventListener('touchstart', onDown, { passive:false });
 
 <!-- ===== UNIFIED LEFT PANEL ENHANCEMENT (added) ===== -->
 <style id="unifiedPanelCSS">
-  /* Make the dashboard width adjustable / enlargable */
-  #dashboard{ width: var(--dash-w, 380px) !important; transition: width .2s ease, transform .25s ease; }
-  #dashToggle{ left: calc(var(--dash-w, 380px) + 12px) !important; }
-  body.dash-min #dashToggle{ left:12px !important; }
-
-  /* "Show all" stacked mode: reveal every view at once inside the scroll area */
-  #dashboard.dash-all #dashContent .dash-view{ display:block !important; }
-  #dashboard.dash-all #dashContent .dash-view + .dash-view{
-    margin-top:14px; padding-top:14px; border-top:1px dashed rgba(0,0,0,.12);
+  /* ===== Dockable dark panels ===== */
+  .vp-dock{
+    position:fixed; top:0; height:100vh; z-index:11000;
+    width:var(--vp-w,360px);
+    display:flex; flex-direction:column;
+    background:rgba(15,23,42,.92);
+    color:rgba(255,255,255,.92);
+    backdrop-filter:blur(10px);
+    box-shadow:0 8px 30px rgba(0,0,0,.45);
+    font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+    transition:transform .25s ease, width .2s ease;
   }
-  /* Section caption shown above each stacked panel in "all" mode */
-  .up-caption{ display:none; font-weight:800; font-size:12px; color:#0f172a;
-    text-transform:uppercase; letter-spacing:.04em; margin:0 0 8px; }
-  #dashboard.dash-all .up-caption{ display:block; }
+  #vpLeft{ left:0; border-right:1px solid rgba(255,255,255,.12); --vp-w:var(--vp-lw,360px); width:var(--vp-lw,360px); }
+  #vpRight{ right:0; border-left:1px solid rgba(255,255,255,.12); --vp-w:var(--vp-rw,360px); width:var(--vp-rw,360px); }
+  #vpLeft.vp-collapsed{ transform:translateX(calc(-1 * var(--vp-lw,360px))); }
+  #vpRight.vp-collapsed{ transform:translateX(var(--vp-rw,360px)); }
 
-  /* Toolbar in the dashboard header for choose / enlarge controls */
-  #upToolbar{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:8px; }
-  #upToolbar .up-btn{ font:600 11px system-ui,sans-serif; cursor:pointer;
-    border:1px solid rgba(0,0,0,.15); background:#fff; color:#0f172a;
-    border-radius:7px; padding:4px 9px; line-height:1; }
-  #upToolbar .up-btn:hover{ background:#f1f5f9; }
-  #upToolbar .up-btn.active{ background:#0f172a; color:#fff; border-color:#0f172a; }
-  #upToolbar .up-sep{ width:1px; align-self:stretch; background:rgba(0,0,0,.12); margin:0 2px; }
-  #upToolbar select{ font:600 11px system-ui,sans-serif; border:1px solid rgba(0,0,0,.15);
-    border-radius:7px; padding:3px 6px; }
+  .vp-head{
+    flex:0 0 auto; display:flex; align-items:center; gap:8px;
+    padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.04);
+  }
+  .vp-head .vp-title{ font-weight:800; font-size:14px; letter-spacing:.02em; }
+  .vp-head .vp-sub{ font-size:11px; color:rgba(255,255,255,.6); margin-top:1px; }
+  .vp-head .vp-spacer{ flex:1; }
+  .vp-tools{ display:flex; gap:5px; align-items:center; }
+  .vp-btn{
+    cursor:pointer; border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.06); color:rgba(255,255,255,.9);
+    border-radius:7px; padding:3px 8px; font:600 12px system-ui,sans-serif; line-height:1;
+  }
+  .vp-btn:hover{ background:rgba(255,255,255,.14); }
 
-  /* Explanatory help blocks inside each panel */
-  .up-explain{ font:400 11.5px/1.45 system-ui,sans-serif; color:#475569;
-    background:#f8fafc; border:1px solid #e2e8f0; border-left:3px solid #38bdf8;
-    border-radius:8px; padding:8px 10px; margin:0 0 12px; }
-  .up-explain b{ color:#0f172a; }
-  .up-explain ul{ margin:6px 0 0; padding-left:16px; }
-  .up-explain li{ margin:2px 0; }
+  .vp-body{ flex:1; overflow-y:auto; overflow-x:hidden; padding:12px; }
+  .vp-body::-webkit-scrollbar{ width:9px; }
+  .vp-body::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.2); border-radius:5px; }
 
-  /* Drag-to-resize handle on the right edge of the panel */
-  #upResizer{ position:fixed; top:0; height:100vh; width:6px; cursor:ew-resize;
-    left: calc(var(--dash-w, 380px) - 3px); z-index:11002; }
-  #upResizer:hover{ background:rgba(56,189,248,.35); }
-  body.dash-min #upResizer{ display:none; }
+  /* Section caption + explanation card inside each dock */
+  .vp-cap{ font-weight:800; font-size:12px; text-transform:uppercase; letter-spacing:.05em;
+    color:rgba(255,255,255,.92); margin:0 0 6px; }
+  .vp-explain{ font:400 11.5px/1.5 system-ui,sans-serif; color:rgba(255,255,255,.72);
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+    border-left:3px solid #38bdf8; border-radius:8px; padding:8px 10px; margin:0 0 12px; }
+  .vp-explain b{ color:#fff; }
+  .vp-explain ul{ margin:6px 0 0; padding-left:16px; }
+  .vp-explain li{ margin:2px 0; }
+  .vp-group + .vp-group{ margin-top:16px; padding-top:14px; border-top:1px dashed rgba(255,255,255,.18); }
+
+  /* Flatten relocated panels so they sit as dark cards inside the dock */
+  .vp-body #envPanel, .vp-body #scenarioPanel, .vp-body .vp-moved{
+    position:static !important; inset:auto !important; top:auto !important; left:auto !important;
+    right:auto !important; bottom:auto !important; transform:none !important;
+    width:100% !important; max-width:100% !important; max-height:none !important; height:auto !important;
+    margin:0 !important; box-shadow:none !important; border:0 !important; background:transparent !important;
+    backdrop-filter:none !important; z-index:auto !important; cursor:default !important;
+  }
+  .vp-body .drag-handle, .vp-body .ui-header{ cursor:default !important; }
+
+  /* Drag-to-resize handles */
+  .vp-resizer{ position:fixed; top:0; height:100vh; width:6px; z-index:11002; cursor:ew-resize; }
+  #vpLeftResizer{ left:calc(var(--vp-lw,360px) - 3px); }
+  #vpRightResizer{ right:calc(var(--vp-rw,360px) - 3px); }
+  .vp-resizer:hover{ background:rgba(56,189,248,.4); }
+  .vp-dock.vp-collapsed + .vp-resizer{ display:none; }
+
+  /* Reopen tabs when a dock is collapsed */
+  .vp-reopen{ position:fixed; top:12px; z-index:11001; display:none;
+    cursor:pointer; border:1px solid rgba(255,255,255,.2);
+    background:rgba(15,23,42,.92); color:#fff; border-radius:8px;
+    padding:6px 10px; font:700 11px system-ui,sans-serif; box-shadow:0 2px 10px rgba(0,0,0,.4); }
+  #vpLeftReopen{ left:12px; } #vpRightReopen{ right:12px; }
+  .vp-dock.vp-collapsed ~ .vp-reopen.vp-for-this{ display:block; }
 </style>
 <script id="unifiedPanelJS">
 (function(){
   function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded',fn); }
   ready(function(){
-    var dash=document.getElementById('dashboard');
-    if(!dash) return;
+    var body=document.body; if(!body) return;
+    if(document.getElementById('vpLeft')) return;
 
-    // ---- 1. Explanations for each functionality (added above each panel) ----
-    var EXPLAIN={
-      'view-viz':{title:'Visualization',html:'<b>3D map controls.</b> Style how the city twin is drawn.'+
-        '<ul><li><b>Building selector</b> &amp; <b>color / palette</b> recolor structures by a chosen attribute.</li>'+
-        '<li><b>Basemap</b> switches between street map and satellite imagery.</li>'+
-        '<li><b>Heat / halo / shadow</b> overlay the urban-heat-island layer, glow and cast sun shadows.</li>'+
-        '<li><b>Sun hour</b> overrides the time of day; <b>live traffic</b> and <b>prediction</b> stream model data.</li></ul>'},
-      'view-env':{title:'Environment',html:'<b>Air-quality &amp; pollution analytics.</b> '+
-        'Pick a <b>pollutant</b>, <b>granularity</b> and look-back window to chart measured values, '+
-        'toggle the <b>forecast</b> line and set a <b>threshold</b> to flag exceedances.'},
-      'view-weather':{title:'Weather',html:'<b>Local forecast (Europe/Sofia).</b> '+
-        'Shows current temperature, wind, humidity and rain, a 7-step outlook and a trend chart '+
-        'used to drive the climate scenarios.'},
-      'view-scn':{title:'What-if scenarios',html:'<b>Policy &amp; resilience sandbox.</b> '+
-        'Move the sliders (climate, greenery, cool roofs, wind, traffic, industry, flood, outage, wildfire, '+
-        'evacuation) to simulate interventions. The <b>green-infrastructure card</b> and <b>summary</b> '+
-        'estimate the resulting tree count, canopy, UHI cooling and CO&#8322; effect.'}
-    };
-    Object.keys(EXPLAIN).forEach(function(vid){
-      var host=document.getElementById(vid); if(!host) return;
-      if(host.querySelector('.up-caption')) return;
-      var cap=document.createElement('div'); cap.className='up-caption'; cap.textContent=EXPLAIN[vid].title;
-      var ex=document.createElement('div'); ex.className='up-explain'; ex.innerHTML=EXPLAIN[vid].html;
-      host.insertBefore(ex, host.firstChild);
-      host.insertBefore(cap, host.firstChild);
-    });
+    // Remove any leftover old dashboard from the previous version (if present)
+    var oldDash=document.getElementById('dashboard'); if(oldDash) oldDash.style.display='none';
+    var oldToggle=document.getElementById('dashToggle'); if(oldToggle) oldToggle.style.display='none';
 
-    // ---- 2. Toolbar: choose a panel OR show all, plus enlarge/shrink ----
-    var header=document.getElementById('dashHeader')||dash;
-    var bar=document.createElement('div'); bar.id='upToolbar';
-    bar.innerHTML=''+
-      '<select id="upChoose" title="Choose a panel">'+
-        '<option value="all">All panels</option>'+
-        '<option value="view-viz">Visualization</option>'+
-        '<option value="view-env">Environment</option>'+
-        '<option value="view-weather">Weather</option>'+
-        '<option value="view-scn">Scenarios</option>'+
-      '</select>'+
-      '<span class="up-sep"></span>'+
-      '<button class="up-btn" id="upSmaller" title="Narrower">&#8722;</button>'+
-      '<button class="up-btn" id="upWider" title="Wider">&#43;</button>'+
-      '<button class="up-btn" id="upMax" title="Enlarge to half screen">Enlarge</button>'+
-      '<button class="up-btn" id="upReset" title="Reset width">Reset</button>';
-    header.appendChild(bar);
-
-    var W_MIN=300, W_MAX=Math.min(900, Math.round(window.innerWidth*0.9)), W_DEF=380;
-    function setW(w){ w=Math.max(W_MIN,Math.min(W_MAX,Math.round(w)));
-      document.documentElement.style.setProperty('--dash-w', w+'px'); return w; }
-    function curW(){ return parseInt(getComputedStyle(dash).width,10)||W_DEF; }
-
-    function choose(v){
-      var sel=document.getElementById('upChoose'); if(sel) sel.value=v;
-      if(v==='all'){ dash.classList.add('dash-all');
-        document.querySelectorAll('.dash-nav-btn').forEach(function(b){ b.classList.remove('active'); });
-        var t=document.getElementById('dashTitle'); if(t) t.textContent='All panels';
-        var s=document.getElementById('dashSubtitle'); if(s) s.textContent='Every control in one scroll';
-      } else {
-        dash.classList.remove('dash-all');
-        var btn=document.querySelector('.dash-nav-btn[data-view="'+v+'"]');
-        if(btn) btn.click();
-      }
+    function dock(id,side,title,sub){
+      var d=document.createElement('aside'); d.className='vp-dock'; d.id=id;
+      d.innerHTML='<div class="vp-head">'+
+        '<div><div class="vp-title">'+title+'</div><div class="vp-sub">'+sub+'</div></div>'+
+        '<div class="vp-spacer"></div>'+
+        '<div class="vp-tools">'+
+          '<button class="vp-btn" data-act="minus" title="Narrower">&#8722;</button>'+
+          '<button class="vp-btn" data-act="plus" title="Wider">&#43;</button>'+
+          '<button class="vp-btn" data-act="max" title="Enlarge">&#8596;</button>'+
+          '<button class="vp-btn" data-act="hide" title="Collapse">'+(side==='left'?'&#10094;':'&#10095;')+'</button>'+
+        '</div></div>'+
+        '<div class="vp-body"></div>';
+      body.appendChild(d);
+      return d;
     }
-    document.getElementById('upChoose').addEventListener('change',function(e){ choose(e.target.value); });
-    // keep dropdown in sync when the icon-nav buttons are clicked
-    document.querySelectorAll('.dash-nav-btn').forEach(function(b){
-      b.addEventListener('click',function(){ dash.classList.remove('dash-all');
-        var sel=document.getElementById('upChoose'); if(sel) sel.value=b.dataset.view; });
+
+    var left=dock('vpLeft','left','Environment &amp; Pollution','Air quality, UHI &amp; pollution analytics');
+    var right=dock('vpRight','right','Traffic &amp; Scenarios','Live traffic and what-if policy sandbox');
+
+    var leftBody=left.querySelector('.vp-body');
+    var rightBody=right.querySelector('.vp-body');
+
+    function group(parent,cap,explainHTML){
+      var g=document.createElement('div'); g.className='vp-group';
+      var c=document.createElement('div'); c.className='vp-cap'; c.innerHTML=cap;
+      var e=document.createElement('div'); e.className='vp-explain'; e.innerHTML=explainHTML;
+      g.appendChild(c); g.appendChild(e); parent.appendChild(g);
+      return g;
+    }
+
+    function darken(el){ if(el){ el.setAttribute('data-theme','dark'); el.classList.add('vp-moved'); } }
+
+    // ---- LEFT: Environment & Pollution ----
+    var gEnv=group(leftBody,'Environment &amp; Pollution',
+      '<b>Air-quality &amp; pollution analytics.</b> Choose a <b>pollutant</b>, '+
+      '<b>granularity</b> and look-back window to chart measured values, toggle the '+
+      '<b>forecast</b> line and set a <b>threshold</b> to flag exceedances. The urban-heat '+
+      'context is shared with the map\'s UHI layer.');
+    var envP=document.getElementById('envPanel'); darken(envP); if(envP) gEnv.appendChild(envP);
+
+    // ---- RIGHT: Traffic + What-if Scenarios ----
+    var gTraf=group(rightBody,'Traffic',
+      '<b>Live traffic controls.</b> Toggle the <b>live traffic</b> stream and set its '+
+      '<b>refresh</b> rate. The road-closure and traffic-network simulators stay as floating '+
+      'panels on the map so you can place them over the area you are studying.');
+    // Move the "Traffic" ui-section out of the control panel into this group
+    var trafSec=null;
+    document.querySelectorAll('#controlPanel .ui-section').forEach(function(s){
+      var t=s.querySelector('.ui-section-title');
+      if(t && /traffic/i.test(t.textContent)) trafSec=s;
     });
+    if(trafSec){ trafSec.classList.add('vp-moved'); gTraf.appendChild(trafSec); }
+    else { gTraf.querySelector('.vp-explain').insertAdjacentHTML('beforeend',
+      '<br><span style="opacity:.7">(Traffic controls remain in the main control panel.)</span>'); }
 
-    document.getElementById('upWider').addEventListener('click',function(){ setW(curW()+60); });
-    document.getElementById('upSmaller').addEventListener('click',function(){ setW(curW()-60); });
-    document.getElementById('upMax').addEventListener('click',function(){ setW(window.innerWidth*0.5); });
-    document.getElementById('upReset').addEventListener('click',function(){ setW(W_DEF); });
+    var gScn=group(rightBody,'What-if Scenarios',
+      '<b>Policy &amp; resilience sandbox.</b> Move the sliders (climate, greenery, cool roofs, '+
+      'wind, traffic, industry, flood, outage, wildfire, evacuation) to simulate interventions. '+
+      'The green-infrastructure card and summary estimate tree count, canopy, UHI cooling and CO&#8322; effect.');
+    var scnP=document.getElementById('scenarioPanel'); darken(scnP); if(scnP) gScn.appendChild(scnP);
 
-    // ---- 3. Drag-to-resize handle ----
-    var rz=document.createElement('div'); rz.id='upResizer'; document.body.appendChild(rz);
-    var dragging=false;
-    rz.addEventListener('mousedown',function(e){ dragging=true; e.preventDefault();
-      document.body.style.userSelect='none'; });
-    window.addEventListener('mousemove',function(e){ if(dragging) setW(e.clientX); });
-    window.addEventListener('mouseup',function(){ if(dragging){ dragging=false; document.body.style.userSelect=''; } });
+    // ---- Width + collapse controls ----
+    var LW=360, RW=360, MINW=300, MAXW=Math.min(640, Math.round(window.innerWidth*0.45));
+    function setLW(w){ LW=Math.max(MINW,Math.min(MAXW,Math.round(w))); document.documentElement.style.setProperty('--vp-lw',LW+'px'); }
+    function setRW(w){ RW=Math.max(MINW,Math.min(MAXW,Math.round(w))); document.documentElement.style.setProperty('--vp-rw',RW+'px'); }
+    setLW(LW); setRW(RW);
 
-    // default: show all panels stacked & scrollable
-    choose('all');
+    function wire(dockEl,side){
+      dockEl.querySelector('.vp-tools').addEventListener('click',function(e){
+        var b=e.target.closest('.vp-btn'); if(!b) return; var act=b.dataset.act;
+        var cur=(side==='left'?LW:RW); var set=(side==='left'?setLW:setRW);
+        if(act==='plus') set(cur+50);
+        else if(act==='minus') set(cur-50);
+        else if(act==='max') set(MAXW);
+        else if(act==='hide'){ dockEl.classList.add('vp-collapsed'); }
+      });
+    }
+    wire(left,'left'); wire(right,'right');
+
+    // Reopen tabs
+    function reopen(id,side,dockEl,label){
+      var r=document.createElement('button'); r.className='vp-reopen vp-for-this'; r.id=id; r.innerHTML=label;
+      body.appendChild(r);
+      function sync(){ r.style.display = dockEl.classList.contains('vp-collapsed') ? 'block':'none'; }
+      r.addEventListener('click',function(){ dockEl.classList.remove('vp-collapsed'); sync(); });
+      dockEl.querySelector('.vp-tools').addEventListener('click',function(){ setTimeout(sync,0); });
+      sync();
+    }
+    reopen('vpLeftReopen','left',left,'&#10095; Environment');
+    reopen('vpRightReopen','right',right,'Traffic &amp; Scenarios &#10094;');
+
+    // Resizers
+    function resizer(id,side,setter){
+      var rz=document.createElement('div'); rz.className='vp-resizer'; rz.id=id; body.appendChild(rz);
+      var on=false;
+      rz.addEventListener('mousedown',function(e){ on=true; e.preventDefault(); body.style.userSelect='none'; });
+      window.addEventListener('mousemove',function(e){ if(!on) return;
+        setter(side==='left'? e.clientX : (window.innerWidth - e.clientX)); });
+      window.addEventListener('mouseup',function(){ if(on){ on=false; body.style.userSelect=''; } });
+    }
+    resizer('vpLeftResizer','left',setLW);
+    resizer('vpRightResizer','right',setRW);
   });
 })();
 </script>
