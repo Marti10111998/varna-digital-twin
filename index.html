@@ -5,8 +5,6 @@
   See the LICENSE file for details.
 -->
 
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,7 +46,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   width: 12px !important; height: 12px !important;
   margin-right: 6px !important; border-radius: 3px !important;
 }
-
 
     html, body, #cesiumContainer { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
 
@@ -168,13 +165,10 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   padding-right: 86px; /* space for ☾ − ⤺ */
 }
 
-
 /* Remove the old cap (override it) */
 #envPanel canvas#pollutionChart{
   max-height: none !important;
 }
-
-
 
 /* ===== Professional panel system (drop-in) ===== */
 
@@ -271,8 +265,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   background-clip: content-box;
 }
 
-
-
 .panel{
   background: var(--panel-bg) !important;
   border: 1px solid var(--panel-border);
@@ -280,7 +272,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   backdrop-filter: blur(var(--panel-blur));
   -webkit-backdrop-filter: blur(var(--panel-blur));
 }
-
 
 /* === UHI LEGEND: force classic dark overlay style === */
 /* UHI legend uses the SAME panel system */
@@ -296,10 +287,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   border: 1px solid rgba(15,23,42,.22);
 }
 
-
-
-
-
 /* Header that stays visible when collapsed (because enhancePanels hides .panel-body only) */
 .ui-header{
   display:flex;
@@ -311,7 +298,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   border-top-right-radius: 12px;
   background: var(--panel-handle); /* ✅ theme-aware header tint */
 }
-
 
 .ui-title{
   font-weight: 750;
@@ -393,7 +379,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
 .panel .toolbtn:hover{
   filter: brightness(1.1);
 }
-
 
 /* =========================================================
    Control panel: fit on one screen (smaller text + scroll)
@@ -499,7 +484,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   max-width: 340px;
 }
 
-
 .ictDot{
   width: 10px;
   height: 10px;
@@ -574,13 +558,11 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   width: 100% !important;
 }
 
-
 @media (max-width: 980px){
   .pollRow{
     grid-template-columns: 1fr;
   }
 }
-
 
 /* Compact, dense pollutant tiles */
 .pollTiles{
@@ -604,7 +586,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   position: fixed !important;
   z-index: 40000 !important;
 }
-
 
 /* ===========================
    Bottom-right stacked panels
@@ -675,7 +656,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
 .uhiStamp{ color: var(--text-muted); }
 #uhiPollutionBlock{ border-top: 1px solid var(--panel-divider); }
 
-
 /* ============================
    Pollution tiles – danger coloring restored
    ============================ */
@@ -723,7 +703,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   opacity: .85;
   font-size: 10px;
 }
-
 
 /* Tighten tiles for legend context */
 #uhiLegendRight .pollTile{
@@ -781,8 +760,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   margin-left: 8px;   /* spacing between title block and buttons */
 }
 
-
-
 #envPanel canvas{
   max-height: none !important;
 }
@@ -804,7 +781,6 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   height: 420px;     /* adjust to taste */
   margin-top: 12px;
 }
-
 
 #envPanel canvas{
   max-height: none !important;
@@ -903,12 +879,10 @@ html { font-size: 14px; } /* (was 16px). Try 13px if you want it even smaller. *
   box-shadow: none;
 }
 
-
 /* Dark theme */
 .panel[data-theme="dark"] .ui-header{
   border-bottom: 1px solid rgba(255,255,255,0.12);
 }
-
 
 /* === Normalize Env + Weather panels to match Control panel === */
 
@@ -1334,8 +1308,6 @@ body.dash-min #dashToggle{ left:12px; }
   </style>
 </head>
 
-
-
 <body>
   <div id="cesiumContainer"></div>
   <!-- ================= ORGANIZED DASHBOARD ================= -->
@@ -1347,18 +1319,18 @@ body.dash-min #dashToggle{ left:12px; }
                             <button class="dash-nav-btn" data-view="view-env" data-title="Environment" data-sub="Air quality & pollution"><span class="dash-ico">🌫️</span>Env</button>
                                   <button class="dash-nav-btn" data-view="view-weather" data-title="Weather" data-sub="Forecast • Europe/Sofia"><span class="dash-ico">⛅</span>Wx</button>
                                         <button class="dash-nav-btn" data-view="view-scn" data-title="What-if Scenarios" data-sub="Climate, greening, traffic & policy"><span class="dash-ico">🧪</span>Scn</button>
-                                            </nav>
-                                                <div id="dashMain">
-                                                      <div id="dashHeader"><div><div id="dashTitle">Visualization</div><div id="dashSubtitle">Buildings, color, lighting, traffic & forecast</div></div></div>
-                                                            <div id="dashContent">
-                                                                    <section class="dash-view active" id="view-viz"></section>
-                                                                            <section class="dash-view" id="view-env"></section>
-                                                                                    <section class="dash-view" id="view-weather"></section>
-                                                                                            <section class="dash-view" id="view-scn"></section>
-                                                                                                  </div>
-                                                                                                      </div>
-                                                                                                        </aside>
-                                                                                                        -->
+                    </nav>
+                    <div id="dashMain">
+                    <div id="dashHeader"><div><div id="dashTitle">Visualization</div><div id="dashSubtitle">Buildings, color, lighting, traffic & forecast</div></div></div>
+                    <div id="dashContent">
+                    <section class="dash-view active" id="view-viz"></section>
+                    <section class="dash-view" id="view-env"></section>
+                    <section class="dash-view" id="view-weather"></section>
+                    <section class="dash-view" id="view-scn"></section>
+                    </div>
+                    </div>
+                    </aside>
+                    -->
   <!-- Control Panel -->
 <div id="controlPanel" class="absolute top-4 left-4 w-[320px] z-10 font-sans rounded-xl">
   <!-- Header (also the drag handle) -->
@@ -1366,7 +1338,7 @@ body.dash-min #dashToggle{ left:12px; }
     <div style="min-width:0;">
       <div class="ui-title">Varna Digital Twin</div>
       <div class="ui-subtitle">Visualization controls</div>
-    </div>    
+    </div>
   </div>
 
   <!-- Body (enhancePanels will keep this collapsible) -->
@@ -1521,7 +1493,6 @@ body.dash-min #dashToggle{ left:12px; }
   </div>
 </div>
 
-
   <div id="tooltip"></div>
 
   <!-- Small tiles -->
@@ -1662,11 +1633,7 @@ body.dash-min #dashToggle{ left:12px; }
 
 </div>
 
-
-
-
 <!-- Time-series chart -->
-
 
 <!-- ================ What-if Scenarios Panel ================ -->
 <div id="scenarioPanel" class="panel">
@@ -1871,7 +1838,6 @@ body.dash-min #dashToggle{ left:12px; }
   </div>
 </div>
 
-
 <!-- System Health (compact status pill) -->
 <div id="ictPill" class="ictPill">
   <span id="ictPillDot" class="ictDot"></span>
@@ -1950,10 +1916,7 @@ body.dash-min #dashToggle{ left:12px; }
   </div>
 </div>
 
-
-
 <!-- Weather Forecast panel -->
-
 
 <script type="module">
 
@@ -2023,8 +1986,6 @@ const DEV_MODE = true;
 const CLOUD_SYNC_ENABLED = false;
 const SYNC_KEY = "pollution_is_sync_v1";
 const DEVICE_KEY = "device_id_v1";
-
-
 
     function getDeviceId(){
       try{
@@ -2225,7 +2186,6 @@ const DEVICE_KEY = "device_id_v1";
       for(let i=0;i<breaks.length;i++){ if(x <= breaks[i]) return hexToCesium(colors[i], alpha); }
       return hexToCesium(colors[colors.length-1], alpha);
     }
-
 
     // ===== Legend helpers (RIGHT ONLY) =====
     function renderDiscreteLegends(breaksAsc, colors, minVal){
@@ -2722,7 +2682,6 @@ function updateUhiHalo(){
       viewer.scene.requestRender();
     }
 
-
 // ==========================
 // DIGITAL TWIN SERVICE HEALTH
 // ==========================
@@ -2806,7 +2765,6 @@ async function checkSystemHealth(){
   sub.textContent =
     `Pollution ${pollutionStatus} • Weather ${weatherStatus} • Traffic ${trafficStatus}`;
 }
-
 
     // ==========================
     // Time-series chart wiring
@@ -2991,7 +2949,6 @@ const LABELS = {
   }
 };
 
-
     Chart.register(thresholdPlugin);
     Chart.register(dayLinesPlugin);
 
@@ -3123,7 +3080,6 @@ chart.options.scales.x.ticks.maxTicksLimit =
 // show day labels only when it makes sense (daily view)
 chart.options.plugins.dayLines.showLabels = (gran === "day");
 
-
 const measuredAgg = aggregateSeries(
   sliceDaysBack(tsStore[pollutant] || [], daysBack), gran
 ).map(p=>({ x:p.t, y:p.v }));
@@ -3150,7 +3106,6 @@ if (effectiveShowPred && horizonHrs > 0) {
   predictedAgg = aggregateSeries(future, gran).map(p=>({ x:p.t, y:p.v }));
 }
 
-
       const thr = Number.isFinite(THRESHOLDS[pollutant]) ? THRESHOLDS[pollutant] : Infinity;
       const peaks = findPeaks(measuredAgg);
       const band  = buildPredictionBand(measuredAgg, predictedAgg);
@@ -3174,7 +3129,6 @@ const dsPrimary = {
 };
 
 const datasets = [dsPrimary];
-
 
 // Only add separate forecast layers if we ALSO have measured data.
 // (If we're forecast-only, dsPrimary already *is* the forecast)
@@ -3204,7 +3158,6 @@ if (measuredOk2 && effectiveShowPred && predictedAgg.length){
   datasets.push(dsPredLower, dsPredUpper, dsPred);
 }
 
-
       if (peaks.length){
         datasets.push({
           type: 'scatter',
@@ -3227,8 +3180,6 @@ datasets.push({
   skipLegend: false
 });
 
-
-
       chart.data.datasets = datasets;
       chart.options.scales.y.title.text = `${pollutant} (${unit})`;
       chart.options.plugins.thresholdLine.value = thr;
@@ -3236,7 +3187,6 @@ datasets.push({
       const mode = measuredOk2 ? "measured+forecast" : "forecast-only (API offline)";
 document.getElementById("pollutionChartStatus").textContent =
   `${pollutant} • ${mode} • granularity: ${gran} • past: ${daysBack}d • future: ${horizonHrs}h • measured pts: ${measuredAgg.length} • forecast pts: ${predictedAgg.length}`;
-
 
       chart.update();
 
@@ -3332,7 +3282,6 @@ function initChartUI(){
 
   rerenderNow();
 }
-
 
     // ==========================
     // Pollution tiles panel
@@ -3437,8 +3386,6 @@ function paintPollutionPanelNow(){
     el.textContent = `${current} • Traffic: ${msg}`;
   }
 }
-
-
 
     // ==========================
     // Greening: trees in the 3D scene
@@ -4751,7 +4698,6 @@ function paintPollutionPanelNow(){
       // If we already have any stored measured points, forecast immediately
 requestForecast();
 
-
       const viewerOpts = {
   baseLayerPicker: false,
   timeline: false,
@@ -4767,7 +4713,6 @@ Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(
 Cesium.Camera.DEFAULT_VIEW_FACTOR = 0.5;
 
 viewer = new Cesium.Viewer("cesiumContainer", viewerOpts);
-
 
 // ==========================
 // Basemap toggle
@@ -4903,8 +4848,6 @@ document.getElementById("sunHour")?.addEventListener("change", applyShadowAndSun
 
 // Apply once at startup
 applyShadowAndSun();
-
-
 
       // ==========================
       // BUILDINGS — input source = Cesium OSM Buildings
@@ -5108,15 +5051,12 @@ applyShadowAndSun();
       await fetchUHIAndUpdate();
       setInterval(fetchUHIAndUpdate, 60_000);
 
-
       // Weather forecast (Open-Meteo)
 await refreshWeatherForecast();
 setInterval(refreshWeatherForecast, 15 * 60_000); // every 15 minutes
 
-
       setInterval(()=>{ pruneOldData(); saveTsStore(); }, 5*60*1000);
 
-  
       // Tooltip on hover
       const tooltip = document.getElementById("tooltip");
 
@@ -5204,8 +5144,6 @@ setInterval(refreshWeatherForecast, 15 * 60_000); // every 15 minutes
       document.getElementById("colorMode").addEventListener("change", updateStyles);
       document.getElementById("palette").addEventListener("change", updateStyles);
       document.getElementById("binCount").addEventListener("input", updateStyles);
-
-
 
       // ====== Live Traffic (TomTom) ======
       const liveTrafficToggle = document.getElementById("liveTrafficToggle");
@@ -5337,7 +5275,6 @@ async function refreshICT(){
   const mainEl    = document.getElementById("ictPillMain");
   const subEl     = document.getElementById("ictPillSub");
 
-
   // If pill is missing, just bail silently
   if (!pill || !dotEl || !mainEl || !subEl) return;
 
@@ -5398,7 +5335,6 @@ try {
     ];
     ch.update();
   }
-
 
   // Paint pill
   if (ok){
@@ -5599,9 +5535,6 @@ try {
   loadPosition();
 })();
 
-
-
-
 // Weather Forecast (Open-Meteo) (NEW)
 // ==========================
 // ==========================
@@ -5781,7 +5714,6 @@ for (let i=iNow; i<Math.min(h.time.length, iNow + N); i++){
   if (Number.isFinite(t) && Number.isFinite(wind)) ptsWind.push({ x: t, y: wind });
 }
 
-
 ch.data.datasets = [
   {
     type: "line",
@@ -5815,10 +5747,8 @@ ch.data.datasets = [
   }
 ];
 
-
   ch.update();
 }
-
 
 function renderWeatherPanel(forecastJson){
   // Stash last forecast so scenarios panel can refresh values live
@@ -5874,7 +5804,6 @@ async function refreshWeatherForecast(){
 
 // ===== Environment panel tabs (Pollution / Weather) =====
 
-
     // ==========================
     // Kickoff
     // ==========================
@@ -5914,7 +5843,6 @@ function initPanelThemes(panelEls){
   }
 }
 
-
     // One-time migration: previous build defaulted panels to COMPACT.
     // We now default to EXPANDED, so wipe any stale compact-on flags
     // unless the user has explicitly chosen compact again.
@@ -5936,14 +5864,12 @@ const PANELS = [
   { id:'#scenarioPanel',  handle:'.drag-handle' },
 ];
 
-
   // ✅ Init per-panel themes (once)
   const panelEls = PANELS
     .map(p => document.querySelector(p.id))
     .filter(Boolean);
 
   initPanelThemes(panelEls);
-
 
       PANELS.forEach(cfg=>{
         const el = document.querySelector(cfg.id);
@@ -5977,11 +5903,9 @@ const PANELS = [
   <div class="toolbtn" title="Collapse/Expand" data-act="toggle">−</div>
 `;
 
-
 // ✅ set icon based on current theme at startup
 const themeBtn = tools.querySelector('[data-act="theme"]');
 if (themeBtn) themeBtn.textContent = (el.dataset.theme === "dark" ? "☀︎" : "☾");
-
 
 (el.querySelector('.ui-header') || el).appendChild(tools);
 
@@ -6354,7 +6278,6 @@ grip.addEventListener('touchstart', onDown, { passive:false });
     });
   });
 })();
-
 
 /* ============================================================================
    ╔════════════════════════════════════════════════════════════════════════╗
@@ -7757,7 +7680,6 @@ grip.addEventListener('touchstart', onDown, { passive:false });
   });
 })();
 
-
 /* ============================================================================
    ╔════════════════════════════════════════════════════════════════════════╗
    ║  STORM / WILDFIRE / INFRASTRUCTURE VISUAL UPGRADES                      ║
@@ -8839,7 +8761,6 @@ grip.addEventListener('touchstart', onDown, { passive:false });
   });
 })();
 
-
   /* ╔══════════════════════════════════════════════════════════════════════╗
      ║  ROADS & TRAFFIC SIMULATION  (window.RTS)                            ║
      ║  ───────────────────────────────────────────────────────────────────  ║
@@ -9603,7 +9524,6 @@ grip.addEventListener('touchstart', onDown, { passive:false });
       })();
     }
   })();
-
 
   /* ╔══════════════════════════════════════════════════════════════════════╗
      ║  ROAD CLOSURE SIMULATION  (window.RCS)                               ║
@@ -10738,9 +10658,6 @@ grip.addEventListener('touchstart', onDown, { passive:false });
   (function(){ var MAP={'view-viz':'controlPanel','view-env':'envPanel','view-weather':'weatherPanel','view-scn':'scenarioPanel'}; function place(){ var any=true; for(var v in MAP){ var host=document.getElementById(v), panel=document.getElementById(MAP[v]); if(host && panel){ if(panel.parentElement!==host){ host.appendChild(panel); panel.style.display=''; } } else { any=false; } } return any; } function show(view,title,sub){ document.querySelectorAll('.dash-view').forEach(function(s){ s.classList.toggle('active', s.id===view); }); document.querySelectorAll('.dash-nav-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.view===view); }); if(title) document.getElementById('dashTitle').textContent=title; var sb=document.getElementById('dashSubtitle'); if(sb) sb.textContent=sub||''; var c=document.getElementById('dashContent'); if(c) c.scrollTop=0; } function init(){ place(); var tries=0, iv=setInterval(function(){ tries++; if(place() || tries>30) clearInterval(iv); }, 200); document.querySelectorAll('.dash-nav-btn').forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.view, b.dataset.title, b.dataset.sub); }); }); var t=document.getElementById('dashToggle'); if(t) t.addEventListener('click', function(){ document.getElementById('dashboard').classList.toggle('dash-collapsed'); document.body.classList.toggle('dash-min'); }); } if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(init,400); }); else setTimeout(init,400); })();
   </script>
 
-
-
-
   <footer style="
   position:fixed;
   bottom:8px;
@@ -10753,8 +10670,8 @@ grip.addEventListener('touchstart', onDown, { passive:false });
   z-index:20000;
   font-family:system-ui, sans-serif;
 ">
-   © 2025 Martina Ivanova — All rights reserved.  
-  Non-commercial research use only.  
+   © 2025 Martina Ivanova — All rights reserved.
+  Non-commercial research use only.
   Funded or institutional project use requires prior written permission.
 </footer>
 
@@ -10851,8 +10768,8 @@ resizer("vpLeftResizer","left",setLW); resizer("vpRightResizer","right",setRW);
 })();
 </script>
 <!-- ===== /UNIFIED PANEL ENHANCEMENT v4 ===== -->
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       </body>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       </html>
+                    </body>
+                    </html>
 
 <!-- ===== UNIFIED PANEL ENHANCEMENT v5 (single left dock) ===== -->
 <style id="unifiedPanelCSSv5">
