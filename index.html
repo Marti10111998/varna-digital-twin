@@ -10771,62 +10771,163 @@ resizer("vpLeftResizer","left",setLW); resizer("vpRightResizer","right",setRW);
                     </body>
                     </html>
 
-<!-- ===== UNIFIED PANEL ENHANCEMENT v5 (single left dock) ===== -->
+<!-- ===== UNIFIED PANEL ENHANCEMENT v5 (single left dock + map tools) ===== -->
 <style id="unifiedPanelCSSv5">
 /* Hide the right dock chrome entirely; everything lives in the left dock */
 #vpRight, #vpRightResizer, #vpRightReopen { display: none !important; }
-/* Give the single left dock a bit more room by default */
-:root { --vp-lw: 420px; }
-#vpLeft { width: var(--vp-lw, 420px); }
-/* Expand the Pollution panel graph so it is visible without scrolling */
-#envPanel .ui-body { max-height: none !important; overflow: visible !important; display: flex !important; flex-direction: column !important; }
-#envPanel .pollChartWrap { width: 100% !important; height: 300px !important; min-height: 300px !important; margin-top: 8px !important; }
-#envPanel canvas#pollutionChart { width: 100% !important; height: 100% !important; max-height: none !important; }
-/* Air-quality-now tiles moved into the Pollution panel */
-#envPanel #uhiPollutionBlock { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.16); }
+:root { --vp-lw: 440px; }
+#vpLeft { width: var(--vp-lw, 440px); }
+
+/* Only ONE pane visible at a time inside the merged dock */
+#vpLeft .vp-pane { display: none !important; }
+#vpLeft .vp-pane.active { display: flex !important; flex-direction: column !important; }
+
+/* ===== Weather + Pollution(Env) graphs: expand to fullest, NO scrolling ===== */
+#vpWeather, #vpPollution { overflow: hidden !important; }
+#vpWeather .vp-moved, #vpPollution .vp-moved { flex: 1 1 auto !important; display: flex !important; flex-direction: column !important; min-height: 0 !important; }
+#envPanel, #weatherPanel { display: flex !important; flex-direction: column !important; min-height: 0 !important; height: 100% !important; max-height: none !important; }
+#envPanel .panel-body, #weatherPanel .panel-body { flex: 1 1 auto !important; max-height: none !important; min-height: 0 !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+#envPanel .panel-preview, #weatherPanel .panel-preview { flex: 0 0 auto !important; }
+#envPanel .ui-body, #weatherPanel .ui-body { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+#envPanel .pollRow { flex: 0 0 auto !important; }
+#envPanel .pollChartWrap { position: relative !important; width: 100% !important; min-height: 0 !important; margin-top: 8px !important; }
+#envPanel canvas#pollutionChart { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-height: none !important; }
+#envPanel .pollRow .mt-2 { display: none !important; }
+#envPanel .mt-3.grid { flex: 0 0 auto !important; gap: 8px !important; margin-top: 8px !important; }
+#envPanel #uhiPollutionBlock { flex: 0 0 auto !important; margin-top: 8px !important; padding-top: 8px !important; border-top: 1px solid rgba(255,255,255,.16); }
 #envPanel #uhiPollutionBlock .uhiSubTitle { font-weight: 700; margin-bottom: 4px; }
-/* Expand the Weather panel graph so it is visible without scrolling */
-#weatherPanel .ui-body { max-height: none !important; overflow: visible !important; }
-#weatherPanel canvas#wTrendChart { max-height: 240px !important; height: 240px !important; }
+#envPanel #uhiPollutionBlock .pollTiles { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+#envPanel #uhiPollutionBlock .pollTile { padding: 4px 7px !important; }
+#weatherPanel #wTrendWrapV5 { position: relative !important; width: 100% !important; min-height: 0 !important; flex: 0 0 auto !important; }
+#weatherPanel #wTrendWrapV5 > canvas, #weatherPanel canvas#wTrendChart { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-height: none !important; }
+
+/* ===== Map tools: north arrow + scale bar ===== */
+#vpNorth{position:fixed;right:18px;top:70px;z-index:41080;width:54px;height:54px;border-radius:50%;background:rgba(15,23,42,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22);box-shadow:0 4px 14px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+#vpNorth .vpN-needle{transition:transform .15s ease;transform-origin:50% 50%;}
+#vpNorth:hover{border-color:rgba(56,189,248,.7);}
+#vpScale{position:fixed;left:50%;transform:translateX(-50%);bottom:30px;z-index:41080;height:30px;background:rgba(15,23,42,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22);border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.45);color:#fff;font:600 11px system-ui,sans-serif;display:flex;align-items:center;padding:0 10px;gap:8px;}
+#vpScale .vpScaleBar{height:7px;background:#fff;position:relative;border:1px solid rgba(0,0,0,.4);box-sizing:border-box;}
+#vpScale .vpScaleBar:before{content:"";position:absolute;top:0;left:50%;width:1px;height:7px;background:rgba(0,0,0,.4);}
+#vpScale .vpScaleLabel{white-space:nowrap;}
 </style>
 <script id="unifiedPanelJSv5">
 (function(){
   function ready(fn){ if(document.readyState!=="loading") fn(); else document.addEventListener("DOMContentLoaded",fn); }
   ready(function(){
+    /* ---------- merge docks + relocate AQ + wrap weather canvas ---------- */
     function run(){
-      var L = document.getElementById("vpLeft");
-      var R = document.getElementById("vpRight");
-      if(!L) return false;
-      var Lrail = L.querySelector(".vp-rail");
-      var Lbody = L.querySelector(".vp-body");
+      var L = document.getElementById("vpLeft"); if(!L) return false;
+      var Lrail = L.querySelector(".vp-rail"); var Lbody = L.querySelector(".vp-body");
       if(!Lrail || !Lbody) return false;
-      // 1) Move every right-dock rail icon and pane into the single left dock
+      var R = document.getElementById("vpRight");
       if(R && !R.getAttribute("data-merged")){
-        var Rrail = R.querySelector(".vp-rail");
-        var Rbody = R.querySelector(".vp-body");
+        var Rrail = R.querySelector(".vp-rail"); var Rbody = R.querySelector(".vp-body");
         if(Rrail){ Array.prototype.slice.call(Rrail.children).forEach(function(ic){ Lrail.appendChild(ic); }); }
         if(Rbody){ Array.prototype.slice.call(Rbody.children).forEach(function(pn){ Lbody.appendChild(pn); }); }
-        R.setAttribute("data-merged","1");
-        R.classList.add("vp-collapsed");
-        R.style.display = "none";
+        R.setAttribute("data-merged","1"); R.classList.add("vp-collapsed"); R.style.display="none";
       }
-      // 2) Move the "Air quality (now)" tiles into the Pollution panel (envPanel)
-      var aq = document.getElementById("uhiPollutionBlock");
-      var env = document.getElementById("envPanel");
-      if(aq && env && !env.contains(aq)){
-        var envBody = env.querySelector(".ui-body") || env;
-        envBody.appendChild(aq);
-      }
+      var aq = document.getElementById("uhiPollutionBlock"); var env = document.getElementById("envPanel");
+      if(aq && env && !env.contains(aq)){ (env.querySelector(".ui-body")||env).appendChild(aq); }
+      var wc = document.getElementById("wTrendChart");
+      if(wc && !document.getElementById("wTrendWrapV5")){ var wr=document.createElement("div"); wr.id="wTrendWrapV5"; wc.parentNode.insertBefore(wr,wc); wr.appendChild(wc); }
       return true;
     }
-    // Run now and keep running because the base v4 script + its MutationObserver rebuild things async
-    var tries = 0;
-    var iv = setInterval(function(){
-      tries++;
-      run();
-      if(tries > 40) clearInterval(iv);
-    }, 250);
+    /* ---------- single active pane ---------- */
+    function showOnly(ico){
+      var L=document.getElementById("vpLeft"); if(!L) return;
+      var icos=Array.prototype.slice.call(L.querySelectorAll(".vp-rail .vp-ico"));
+      var panes=Array.prototype.slice.call(L.querySelectorAll(".vp-body .vp-pane"));
+      var idx=icos.indexOf(ico); if(idx<0) return;
+      icos.forEach(function(c,i){ c.classList.toggle("active", i===idx); });
+      panes.forEach(function(p,i){ p.classList.toggle("active", i===idx); });
+      sizeGraphs();
+    }
+    function wireSingleActive(){
+      var L=document.getElementById("vpLeft"); if(!L) return;
+      var rail=L.querySelector(".vp-rail"); if(!rail || rail.getAttribute("data-single")) return;
+      rail.setAttribute("data-single","1");
+      rail.addEventListener("click", function(e){ var ico=e.target.closest(".vp-ico"); if(!ico) return; setTimeout(function(){ showOnly(ico); },0); });
+      var panes=Array.prototype.slice.call(L.querySelectorAll(".vp-body .vp-pane"));
+      var icos=Array.prototype.slice.call(L.querySelectorAll(".vp-rail .vp-ico"));
+      var fa=panes.findIndex(function(p){ return p.classList.contains("active"); }); if(fa<0) fa=0;
+      if(icos[fa]) showOnly(icos[fa]);
+    }
+    /* ---------- expand graphs, no scroll ---------- */
+    function sizePoll(){
+      var env=document.getElementById("envPanel"); if(!env) return;
+      var body=env.querySelector(".ui-body"); var wrap=env.querySelector(".pollChartWrap");
+      if(!body||!wrap||!env.closest(".vp-pane.active")) return;
+      wrap.style.setProperty("height","60px","important"); wrap.style.setProperty("min-height","0","important");
+      var nonChart=body.scrollHeight-60; var avail=body.clientHeight;
+      wrap.style.setProperty("height", Math.max(160, avail-nonChart-8)+"px","important");
+      if(window.pollutionChart&&window.pollutionChart.resize){ window.pollutionChart.resize(); window.pollutionChart.update("none"); }
+    }
+    function sizeWeather(){
+      var w=document.getElementById("weatherPanel"); if(!w) return;
+      var body=w.querySelector(".ui-body"); var wrap=document.getElementById("wTrendWrapV5");
+      if(!body||!wrap||!w.closest(".vp-pane.active")) return;
+      wrap.style.setProperty("height","40px","important"); wrap.style.setProperty("min-height","0","important");
+      var nonChart=body.scrollHeight-40; var avail=body.clientHeight;
+      wrap.style.setProperty("height", Math.max(150, avail-nonChart-8)+"px","important");
+      if(window.wTrendChart&&window.wTrendChart.resize){ window.wTrendChart.resize(); window.wTrendChart.update("none"); }
+    }
+    function sizeGraphs(){ try{sizePoll();}catch(e){} try{sizeWeather();}catch(e){} }
+    window.__vp5SizeGraphs=sizeGraphs;
+
+    /* ---------- map tools: north arrow + scale bar ---------- */
+    function getViewer(){ return window.viewer || (typeof viewer!=="undefined"?viewer:null); }
+    function buildMapTools(){
+      if(document.getElementById("vpNorth")) return;
+      var n=document.createElement("div"); n.id="vpNorth"; n.title="Reset orientation to North";
+      n.innerHTML='<svg class="vpN-needle" width="30" height="30" viewBox="0 0 30 30"><polygon points="15,3 20,16 15,13 10,16" fill="#ef4444"/><polygon points="15,27 10,14 15,17 20,14" fill="#e2e8f0"/><text x="15" y="9" text-anchor="middle" font-size="7" font-weight="700" fill="#fff" font-family="system-ui">N</text></svg>';
+      document.body.appendChild(n);
+      var s=document.createElement("div"); s.id="vpScale"; s.innerHTML='<div class="vpScaleBar" style="width:80px"></div><span class="vpScaleLabel">&mdash;</span>';
+      document.body.appendChild(s);
+      n.addEventListener("click", function(){
+        var v=getViewer(); if(!v||!v.camera) return;
+        v.camera.flyTo({ destination: v.camera.positionWC.clone(), orientation:{ heading:0.0, pitch:v.camera.pitch, roll:0.0 }, duration:0.6 });
+      });
+    }
+    function niceNumber(x){
+      var p=Math.pow(10, Math.floor(Math.log10(x))); var f=x/p;
+      var nf = f>=5?5 : f>=2?2 : 1; return nf*p;
+    }
+    function updateMapTools(){
+      var v=getViewer(); if(!v||!v.scene||!v.camera) return;
+      var needle=document.querySelector("#vpNorth .vpN-needle");
+      if(needle){ var deg=Cesium.Math.toDegrees(v.camera.heading); needle.style.transform="rotate("+(-deg)+"deg)"; }
+      // scale bar: meters per pixel near bottom-centre of canvas
+      try{
+        var scene=v.scene, cam=v.camera, canvas=scene.canvas;
+        var w=canvas.clientWidth, h=canvas.clientHeight;
+        var y=Math.round(h*0.92);
+        var p1=cam.pickEllipsoid(new Cesium.Cartesian2(Math.round(w/2), y), scene.globe.ellipsoid);
+        var p2=cam.pickEllipsoid(new Cesium.Cartesian2(Math.round(w/2)+100, y), scene.globe.ellipsoid);
+        var label=document.querySelector("#vpScale .vpScaleLabel");
+        var bar=document.querySelector("#vpScale .vpScaleBar");
+        if(p1&&p2&&label&&bar){
+          var mpp=Cesium.Cartesian3.distance(p1,p2)/100; // metres per pixel
+          var target=mpp*120; // aim ~120px bar
+          var dist=niceNumber(target);
+          var px=dist/mpp;
+          bar.style.width=Math.round(px)+"px";
+          label.textContent = dist>=1000 ? (dist/1000)+" km" : Math.round(dist)+" m";
+          document.getElementById("vpScale").style.display="flex";
+        } else if(label){ document.getElementById("vpScale").style.display="none"; }
+      }catch(e){}
+    }
+    function wireMapTools(){
+      var v=getViewer(); if(!v||!v.scene) return false;
+      buildMapTools();
+      if(!v.scene.__vp5Hooked){ v.scene.__vp5Hooked=true; v.scene.postRender.addEventListener(updateMapTools); }
+      updateMapTools();
+      return true;
+    }
+
+    var tries=0;
+    var iv=setInterval(function(){ tries++; run(); wireSingleActive(); sizeGraphs(); wireMapTools(); if(tries>120) clearInterval(iv); }, 250);
     run();
+    window.addEventListener("resize", function(){ sizeGraphs(); updateMapTools(); });
   });
 })();
 </script>
