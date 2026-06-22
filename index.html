@@ -10853,5 +10853,67 @@ resizer("vpLeftResizer","left",setLW); resizer("vpRightResizer","right",setRW);
 <!-- ===== /UNIFIED PANEL ENHANCEMENT v4 ===== -->
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </body>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </html>
+
+<!-- ===== UNIFIED PANEL ENHANCEMENT v5 (single left dock) ===== -->
+<style id="unifiedPanelCSSv5">
+/* Hide the right dock chrome entirely; everything lives in the left dock */
+#vpRight, #vpRightResizer, #vpRightReopen { display: none !important; }
+/* Give the single left dock a bit more room by default */
+:root { --vp-lw: 420px; }
+#vpLeft { width: var(--vp-lw, 420px); }
+/* Expand the Pollution panel graph so it is visible without scrolling */
+#envPanel .ui-body { max-height: none !important; overflow: visible !important; display: flex !important; flex-direction: column !important; }
+#envPanel .pollChartWrap { width: 100% !important; height: 300px !important; min-height: 300px !important; margin-top: 8px !important; }
+#envPanel canvas#pollutionChart { width: 100% !important; height: 100% !important; max-height: none !important; }
+/* Air-quality-now tiles moved into the Pollution panel */
+#envPanel #uhiPollutionBlock { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.16); }
+#envPanel #uhiPollutionBlock .uhiSubTitle { font-weight: 700; margin-bottom: 4px; }
+/* Expand the Weather panel graph so it is visible without scrolling */
+#weatherPanel .ui-body { max-height: none !important; overflow: visible !important; }
+#weatherPanel canvas#wTrendChart { max-height: 240px !important; height: 240px !important; }
+</style>
+<script id="unifiedPanelJSv5">
+(function(){
+  function ready(fn){ if(document.readyState!=="loading") fn(); else document.addEventListener("DOMContentLoaded",fn); }
+  ready(function(){
+    function run(){
+      var L = document.getElementById("vpLeft");
+      var R = document.getElementById("vpRight");
+      if(!L) return false;
+      var Lrail = L.querySelector(".vp-rail");
+      var Lbody = L.querySelector(".vp-body");
+      if(!Lrail || !Lbody) return false;
+      // 1) Move every right-dock rail icon and pane into the single left dock
+      if(R && !R.getAttribute("data-merged")){
+        var Rrail = R.querySelector(".vp-rail");
+        var Rbody = R.querySelector(".vp-body");
+        if(Rrail){ Array.prototype.slice.call(Rrail.children).forEach(function(ic){ Lrail.appendChild(ic); }); }
+        if(Rbody){ Array.prototype.slice.call(Rbody.children).forEach(function(pn){ Lbody.appendChild(pn); }); }
+        R.setAttribute("data-merged","1");
+        R.classList.add("vp-collapsed");
+        R.style.display = "none";
+      }
+      // 2) Move the "Air quality (now)" tiles into the Pollution panel (envPanel)
+      var aq = document.getElementById("uhiPollutionBlock");
+      var env = document.getElementById("envPanel");
+      if(aq && env && !env.contains(aq)){
+        var envBody = env.querySelector(".ui-body") || env;
+        envBody.appendChild(aq);
+      }
+      return true;
+    }
+    // Run now and keep running because the base v4 script + its MutationObserver rebuild things async
+    var tries = 0;
+    var iv = setInterval(function(){
+      tries++;
+      run();
+      if(tries > 40) clearInterval(iv);
+    }, 250);
+    run();
+  });
+})();
+</script>
+<!-- ===== /UNIFIED PANEL ENHANCEMENT v5 ===== -->
+
 </body>
 </html>
